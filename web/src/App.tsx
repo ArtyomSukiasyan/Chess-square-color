@@ -156,6 +156,9 @@ export default function App() {
         <button className="link" onClick={reset}>
           Reset score
         </button>
+        <a className="link" href="/privacy/">
+          Privacy
+        </a>
       </footer>
     </main>
   );
