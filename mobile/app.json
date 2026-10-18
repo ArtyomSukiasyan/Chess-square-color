@@ -16,7 +16,13 @@
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "com.chess_arbiter.squarecolor"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "db785726-2247-4f19-832e-7e090a06eaa7"
+      }
     }
   }
 }

@@ -9,20 +9,11 @@ import {
   useColorScheme,
   View,
 } from 'react-native';
-import Constants from 'expo-constants';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { WebView } from 'react-native-webview';
 
-const VITE_DEV_PORT = 5173;
-
-// EXPO_PUBLIC_WEBSITE_URL wins. Otherwise, in development, load the Vite dev server running
-// on the same machine as Metro (run `npm run dev -- --host` in ../web).
-function resolveWebsiteUrl(): string | null {
-  return "https://chess-square-color-ten.vercel.app/";
-}
-
-const WEBSITE_URL = resolveWebsiteUrl();
+const WEBSITE_URL = 'https://chess-square-color-ten.vercel.app/';
 
 // Mirrors --bg / --text in web/src/App.css so there's no flash around the page.
 const THEME = {
@@ -33,7 +24,8 @@ const THEME = {
 export default function App() {
   const scheme = useColorScheme() === 'dark' ? 'dark' : 'light';
   const theme = THEME[scheme];
-  const webViewRef = useRef<WebView>(null);
+  // react-native-webview 14 defaults the generic to `undefined`, which collapses the props to `never`.
+  const webViewRef = useRef<WebView<object>>(null);
   const [canGoBack, setCanGoBack] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -56,54 +48,44 @@ export default function App() {
   return (
     <SafeAreaProvider>
       <SafeAreaView style={[styles.flex, { backgroundColor: theme.bg }]} edges={['top', 'bottom']}>
-        {!WEBSITE_URL ? (
+        {error ? (
           <View style={styles.center}>
-            <Text style={[styles.message, { color: theme.text }]}>
-              Set EXPO_PUBLIC_WEBSITE_URL to the Square Color web app URL.
+            <Text style={[styles.message, { color: theme.text }]}>Couldn&apos;t load the game.</Text>
+            <Text style={[styles.detail, { color: theme.muted }]}>
+              {error}
+              {'\n'}
+              {WEBSITE_URL}
             </Text>
+            <Pressable onPress={retry} style={styles.button}>
+              <Text style={[styles.buttonText, { color: theme.accent }]}>Retry</Text>
+            </Pressable>
           </View>
-        ) : (
-          <>
-            {error ? (
-              <View style={styles.center}>
-                <Text style={[styles.message, { color: theme.text }]}>Couldn't load the game.</Text>
-                <Text style={[styles.detail, { color: theme.muted }]}>
-                  {error}
-                  {'\n'}
-                  {WEBSITE_URL}
-                </Text>
-                <Pressable onPress={retry} style={styles.button}>
-                  <Text style={[styles.buttonText, { color: theme.accent }]}>Retry</Text>
-                </Pressable>
-              </View>
-            ) : null}
+        ) : null}
 
-            <View style={[styles.flex, error ? styles.hidden : null]}>
-              <WebView
-                ref={webViewRef}
-                source={{ uri: WEBSITE_URL }}
-                style={{ backgroundColor: theme.bg }}
-                onNavigationStateChange={(nav) => setCanGoBack(nav.canGoBack)}
-                onError={(e) => setError(e.nativeEvent.description || 'Failed to load page')}
-                onHttpError={(e) => setError(`HTTP ${e.nativeEvent.statusCode}`)}
-                startInLoadingState
-                renderLoading={() => (
-                  <View style={[styles.center, styles.overlay, { backgroundColor: theme.bg }]}>
-                    <ActivityIndicator size="large" color={theme.accent} />
-                  </View>
-                )}
-                // localStorage keeps the best streak between launches.
-                domStorageEnabled
-                // Feel like a native game: no bounce, zoom or text-selection callouts.
-                bounces={false}
-                overScrollMode="never"
-                setBuiltInZoomControls={false}
-                textInteractionEnabled={false}
-                allowsBackForwardNavigationGestures
-              />
-            </View>
-          </>
-        )}
+        <View style={[styles.flex, error ? styles.hidden : null]}>
+          <WebView
+            ref={webViewRef}
+            source={{ uri: WEBSITE_URL }}
+            style={{ backgroundColor: theme.bg }}
+            onNavigationStateChange={(nav) => setCanGoBack(nav.canGoBack)}
+            onError={(e) => setError(e.nativeEvent.description || 'Failed to load page')}
+            onHttpError={(e) => setError(`HTTP ${e.nativeEvent.statusCode}`)}
+            startInLoadingState
+            renderLoading={() => (
+              <View style={[styles.center, styles.overlay, { backgroundColor: theme.bg }]}>
+                <ActivityIndicator size="large" color={theme.accent} />
+              </View>
+            )}
+            // localStorage keeps the best streak between launches.
+            domStorageEnabled
+            // Feel like a native game: no bounce, zoom or text-selection callouts.
+            bounces={false}
+            overScrollMode="never"
+            setBuiltInZoomControls={false}
+            textInteractionEnabled={false}
+            allowsBackForwardNavigationGestures
+          />
+        </View>
 
         <StatusBar style={scheme === 'dark' ? 'light' : 'dark'} />
       </SafeAreaView>
