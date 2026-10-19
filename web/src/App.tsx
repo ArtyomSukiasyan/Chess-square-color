@@ -268,7 +268,7 @@ export default function App() {
           ))}
         </Segmented>
 
-        <Segmented label="Timer">
+        <Segmented label="Game time">
           {TIMERS.map((t) => (
             <SegmentButton key={t.value} active={timer === t.value} onClick={() => changeTimer(t.value)}>
               {t.label}
@@ -318,7 +318,7 @@ export default function App() {
                   ? "Correct!"
                   : `Wrong — ${squareName(square)} is ${actual}.`
                 : timed && runState === "ready"
-                  ? "The timer starts with your first answer."
+                  ? "The game clock starts with your first answer."
                   : null}
             </div>
 
