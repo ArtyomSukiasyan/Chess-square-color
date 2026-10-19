@@ -13,6 +13,8 @@ const BESTS_KEY = "square-color:best-streaks";
 const LEGACY_BEST_STREAK_KEY = "square-color:best-streak";
 const BOARD_MODE_KEY = "square-color:board-mode";
 const TIMER_KEY = "square-color:timer";
+// Phones and narrow windows, where the board and answer buttons sit below the fold.
+const SMALL_SCREEN_QUERY = "(max-width: 768px)";
 
 type Answer = { guess: SquareColor; correct: boolean } | null;
 
@@ -125,7 +127,20 @@ export default function App() {
     next();
   }, [next]);
 
+  // Bumped on every board-mode tap; the effect below scrolls once the new board has rendered.
+  const [scrollRequest, setScrollRequest] = useState(0);
+
+  useEffect(() => {
+    if (!scrollRequest || !window.matchMedia(SMALL_SCREEN_QUERY).matches) return;
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    window.scrollTo({
+      top: document.documentElement.scrollHeight,
+      behavior: reduceMotion ? "auto" : "smooth",
+    });
+  }, [scrollRequest]);
+
   const changeBoardMode = (mode: BoardMode) => {
+    setScrollRequest((n) => n + 1);
     if (mode === boardMode) return;
     setBoardMode(mode);
     save(BOARD_MODE_KEY, mode);
