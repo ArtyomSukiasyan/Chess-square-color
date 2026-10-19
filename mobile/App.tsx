@@ -6,7 +6,6 @@ import {
   Pressable,
   StyleSheet,
   Text,
-  useColorScheme,
   View,
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
@@ -15,15 +14,10 @@ import { WebView } from 'react-native-webview';
 
 const WEBSITE_URL = 'https://chess-square-color-ten.vercel.app/';
 
-// Mirrors --bg / --text in web/src/App.css so there's no flash around the page.
-const THEME = {
-  light: { bg: '#f6f5f2', text: '#1f1f1f', muted: '#6b6b6b', accent: '#2f7de1' },
-  dark: { bg: '#1c1c1e', text: '#ededed', muted: '#9a9a9a', accent: '#5aa0ff' },
-};
+// Mirrors the palette in web/src/theme.css so there's no flash around the page.
+const theme = { bg: '#f1f3fa', text: '#1c1b29', muted: '#6b6a80', accent: '#1a1146' };
 
 export default function App() {
-  const scheme = useColorScheme() === 'dark' ? 'dark' : 'light';
-  const theme = THEME[scheme];
   // react-native-webview 14 defaults the generic to `undefined`, which collapses the props to `never`.
   const webViewRef = useRef<WebView<object>>(null);
   const [canGoBack, setCanGoBack] = useState(false);
@@ -87,7 +81,7 @@ export default function App() {
           />
         </View>
 
-        <StatusBar style={scheme === 'dark' ? 'light' : 'dark'} />
+        <StatusBar style="dark" />
       </SafeAreaView>
     </SafeAreaProvider>
   );

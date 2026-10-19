@@ -9,6 +9,7 @@
 
 .policy h1 {
   font-size: 2rem;
+  color: var(--color-primary);
   margin-top: 24px;
 }
 
@@ -22,11 +23,11 @@
 }
 
 .policy a {
-  color: var(--target);
+  color: var(--color-primary);
 }
 
 .updated {
-  color: var(--muted);
+  color: var(--color-muted);
   margin: 4px 0 24px;
 }
 
