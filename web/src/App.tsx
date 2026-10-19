@@ -127,8 +127,10 @@ export default function App() {
     next();
   }, [next]);
 
-  // Bumped on every board-mode tap; the effect below scrolls once the new board has rendered.
+  // Bumped on taps that change the layout below (settings, answers); the effect scrolls to the
+  // end of the page once the new content has rendered.
   const [scrollRequest, setScrollRequest] = useState(0);
+  const scrollToEnd = () => setScrollRequest((n) => n + 1);
 
   useEffect(() => {
     if (!scrollRequest || !window.matchMedia(SMALL_SCREEN_QUERY).matches) return;
@@ -140,7 +142,7 @@ export default function App() {
   }, [scrollRequest]);
 
   const changeBoardMode = (mode: BoardMode) => {
-    setScrollRequest((n) => n + 1);
+    scrollToEnd();
     if (mode === boardMode) return;
     setBoardMode(mode);
     save(BOARD_MODE_KEY, mode);
@@ -150,6 +152,7 @@ export default function App() {
   };
 
   const changeTimer = (value: number) => {
+    scrollToEnd();
     if (value === timer) return;
     setTimer(value);
     save(TIMER_KEY, String(value));
@@ -322,14 +325,20 @@ export default function App() {
             <div className="choices">
               <button
                 className={`choice white${answer?.guess === "white" ? " picked" : ""}`}
-                onClick={() => guess("white")}
+                onClick={() => {
+                  guess("white");
+                  scrollToEnd();
+                }}
                 disabled={!!answer}
               >
                 White <kbd>W</kbd>
               </button>
               <button
                 className={`choice black${answer?.guess === "black" ? " picked" : ""}`}
-                onClick={() => guess("black")}
+                onClick={() => {
+                  guess("black");
+                  scrollToEnd();
+                }}
                 disabled={!!answer}
               >
                 Black <kbd>B</kbd>
