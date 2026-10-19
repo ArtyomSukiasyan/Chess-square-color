@@ -230,13 +230,9 @@ export default function App() {
           <>
             <Stat label="Time" value={formatSeconds(secondsLeft)} />
             <Stat label="Correct" value={correct} />
-            <Stat label="Best" value={best} />
           </>
         ) : (
-          <>
-            <Stat label="Streak" value={streak} />
-            <Stat label="Best" value={best} />
-          </>
+          <Stat label="Streak" value={streak} />
         )}
       </section>
 
