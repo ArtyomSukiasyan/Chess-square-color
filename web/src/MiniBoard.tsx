@@ -1,10 +1,11 @@
 import { FILES, RANKS, Square, squareColor, squareName } from "./squares";
 
 interface MiniBoardProps {
-  target: Square;
+  target?: Square;
+  showCoords?: boolean;
 }
 
-export default function MiniBoard({ target }: MiniBoardProps) {
+export default function MiniBoard({ target, showCoords = true }: MiniBoardProps) {
   const ranks = [...RANKS].reverse();
 
   return (
@@ -12,14 +13,14 @@ export default function MiniBoard({ target }: MiniBoardProps) {
       {ranks.map((rank) =>
         FILES.map((_, file) => {
           const square = { file, rank };
-          const isTarget = file === target.file && rank === target.rank;
+          const isTarget = file === target?.file && rank === target?.rank;
           return (
             <div
               key={squareName(square)}
               className={`mini-square ${squareColor(square)}${isTarget ? " target" : ""}`}
             >
-              {file === 0 && <span className="coord rank">{rank}</span>}
-              {rank === 1 && <span className="coord file">{FILES[file]}</span>}
+              {showCoords && file === 0 && <span className="coord rank">{rank}</span>}
+              {showCoords && rank === 1 && <span className="coord file">{FILES[file]}</span>}
             </div>
           );
         })
