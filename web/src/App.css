@@ -5,16 +5,6 @@ button {
   cursor: pointer;
 }
 
-kbd {
-  font-family: ui-monospace, monospace;
-  font-size: 0.7em;
-  padding: 0.1em 0.4em;
-  border: 1px solid currentColor;
-  border-radius: 4px;
-  opacity: 0.6;
-  margin-left: 0.4em;
-}
-
 .app {
   max-width: 480px;
   margin: 0 auto;

@@ -212,26 +212,6 @@ export default function App() {
     return () => clearTimeout(id);
   }, [answer, runState, timed, next]);
 
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.repeat || e.ctrlKey || e.metaKey || e.altKey) return;
-      const key = e.key.toLowerCase();
-      if (key === "w" || key === "arrowleft") guess("white");
-      else if (key === "b" || key === "arrowright") guess("black");
-      else if (key === "enter" || key === " ") {
-        if (runState === "over") {
-          e.preventDefault();
-          restart();
-        } else if (answer && !timed) {
-          e.preventDefault();
-          next();
-        }
-      }
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [guess, next, restart, answer, runState, timed]);
-
   const accuracy = total ? Math.round((correct / total) * 100) : 0;
   const actual = squareColor(square);
   const secondsLeft = Math.ceil(remainingMs / 1000);
@@ -298,8 +278,8 @@ export default function App() {
             correct in {formatSeconds(timer)} · {total - correct} wrong · {accuracy}% accuracy
           </p>
           <p className="results-best">{newRecord ? "New best!" : `Best: ${best}`}</p>
-          <button className="next" onClick={restart} autoFocus>
-            Play again <kbd>Enter</kbd>
+          <button className="next" onClick={restart}>
+            Play again
           </button>
         </section>
       ) : (
@@ -331,7 +311,7 @@ export default function App() {
                 }}
                 disabled={!!answer}
               >
-                White <kbd>W</kbd>
+                White
               </button>
               <button
                 className={`choice black${answer?.guess === "black" ? " picked" : ""}`}
@@ -341,7 +321,7 @@ export default function App() {
                 }}
                 disabled={!!answer}
               >
-                Black <kbd>B</kbd>
+                Black
               </button>
             </div>
           </section>
@@ -351,8 +331,8 @@ export default function App() {
               <>
                 <MiniBoard target={square} />
                 {!answer.correct && !timed && (
-                  <button className="next" onClick={next} autoFocus>
-                    Next <kbd>Enter</kbd>
+                  <button className="next" onClick={next}>
+                    Next
                   </button>
                 )}
               </>
