@@ -12,6 +12,8 @@ const BESTS_KEY = "square-color:best-streaks";
 // Before bests were tracked per board mode; its value belongs to "hidden".
 const LEGACY_BEST_STREAK_KEY = "square-color:best-streak";
 const BOARD_MODE_KEY = "square-color:board-mode";
+// Current untimed streak per board mode, kept across mode switches and app restarts.
+const STREAKS_KEY = "square-color:streaks";
 const TIMER_KEY = "square-color:timer";
 // Phones and narrow windows, where the board and answer buttons sit below the fold.
 const SMALL_SCREEN_QUERY = "(max-width: 768px)";
@@ -39,6 +41,7 @@ const TIMERS: { value: number; label: string }[] = [
 type RunState = "ready" | "running" | "over";
 
 type Bests = Record<string, number>;
+type Streaks = Record<BoardMode, number>;
 
 function bestKey(mode: BoardMode, timer: number): string {
   return timer ? `${mode}:${timer}` : mode;
@@ -82,12 +85,23 @@ function loadBests(): Bests {
   return bests;
 }
 
+function loadStreaks(): Streaks {
+  const streaks: Streaks = { hidden: 0, coords: 0, plain: 0 };
+  try {
+    const saved = JSON.parse(load(STREAKS_KEY) ?? "{}");
+    for (const { value } of BOARD_MODES) streaks[value] = Number(saved?.[value]) || 0;
+  } catch {
+    // Corrupted value — start from zero.
+  }
+  return streaks;
+}
+
 export default function App() {
   const [square, setSquare] = useState<Square>(() => randomSquare());
   const [answer, setAnswer] = useState<Answer>(null);
   const [correct, setCorrect] = useState(0);
   const [total, setTotal] = useState(0);
-  const [streak, setStreak] = useState(0);
+  const [streaks, setStreaks] = useState(loadStreaks);
   const [bests, setBests] = useState(loadBests);
   const [boardMode, setBoardMode] = useState<BoardMode>(loadBoardMode);
   const [timer, setTimer] = useState(loadTimer);
@@ -97,6 +111,7 @@ export default function App() {
   const [newRecord, setNewRecord] = useState(false);
 
   const best = bests[bestKey(boardMode, timer)] ?? 0;
+  const streak = streaks[boardMode];
   const timed = timer > 0;
   const remainingMs =
     runState === "running" ? Math.max(0, endsAt - now) : runState === "over" ? 0 : timer * 1000;
@@ -112,16 +127,25 @@ export default function App() {
     [bests]
   );
 
+  const setStreak = useCallback(
+    (value: number) => {
+      const updated = { ...streaks, [boardMode]: value };
+      setStreaks(updated);
+      save(STREAKS_KEY, JSON.stringify(updated));
+    },
+    [streaks, boardMode]
+  );
+
   const next = useCallback(() => {
     setSquare((prev) => randomSquare(prev));
     setAnswer(null);
   }, []);
 
-  // Back to a fresh session: clears the score and puts a timed challenge back in "ready".
+  // Back to a fresh timed session: clears the score and puts the challenge back in "ready".
+  // The saved untimed streaks are left alone.
   const restart = useCallback(() => {
     setCorrect(0);
     setTotal(0);
-    setStreak(0);
     setRunState("ready");
     setNewRecord(false);
     next();
@@ -146,9 +170,9 @@ export default function App() {
     if (mode === boardMode) return;
     setBoardMode(mode);
     save(BOARD_MODE_KEY, mode);
-    // Bests are per board mode, so switching starts a new streak or challenge.
+    // Timed bests are per board mode, so switching starts a new challenge. Untimed streaks are
+    // kept per mode, so the new mode simply shows its own saved streak.
     if (timed) restart();
-    else setStreak(0);
   };
 
   const changeTimer = (value: number) => {
@@ -173,16 +197,14 @@ export default function App() {
 
       setAnswer({ guess: color, correct: isCorrect });
       setTotal((t) => t + 1);
-      if (isCorrect) {
-        setCorrect((c) => c + 1);
-        const newStreak = streak + 1;
+      if (isCorrect) setCorrect((c) => c + 1);
+      if (!timed) {
+        const newStreak = isCorrect ? streak + 1 : 0;
         setStreak(newStreak);
-        if (!timed) updateBest(bestKey(boardMode, 0), newStreak);
-      } else {
-        setStreak(0);
+        updateBest(bestKey(boardMode, 0), newStreak);
       }
     },
-    [answer, runState, square, timed, timer, streak, boardMode, updateBest]
+    [answer, runState, square, timed, timer, streak, setStreak, boardMode, updateBest]
   );
 
   // Tick the countdown while a challenge is running.
@@ -346,7 +368,16 @@ export default function App() {
       )}
 
       <footer>
-        <button className="link" onClick={restart}>
+        <button
+          className="link"
+          onClick={() => {
+            if (timed) restart();
+            else {
+              setStreak(0);
+              next();
+            }
+          }}
+        >
           Restart
         </button>
         <a className="link" href="/privacy/">
